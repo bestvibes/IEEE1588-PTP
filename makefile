@@ -1,0 +1,21 @@
+#CC=gcc
+CFLAGS= -O3
+OUT_CLIENT=pi/client.out
+FILENAME_CLIENT=pi/pi_client.c
+OUT_SERVER=server/server.out
+FILENAME_SERVER=server/pi_server.c
+HEADER=utils.h
+
+default: $(OUT_CLIENT) $(OUT_SERVER)
+
+$(OUT_CLIENT): $(FILENAME_CLIENT) $(HEADER)
+	$(CC) $(CFLAGS) $(FILENAME_CLIENT) -o $(OUT_CLIENT)
+
+$(OUT_SERVER): $(FILENAME_SERVER) $(HEADER)
+	$(CC) $(CFLAGS) $(FILENAME_SERVER) -o $(OUT_SERVER)
+
+clean:
+	$(RM) $(OUT_CLIENT)
+	$(RM) -r $(OUT_CLIENT).dSYM
+	$(RM) $(OUT_SERVER)
+	$(RM) -r $(OUT_SERVER).dSYM

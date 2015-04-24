@@ -15,10 +15,10 @@ from datetime import datetime
 import time
 
 server_socket = None
-ADDRESS = "192.168.137.2"
-#ADDRESS = "127.0.0.1"
+#ADDRESS = "192.168.137.2"
+ADDRESS = "127.0.0.1"
 PORT = 2468
-NUM_OF_TIMES = 100
+NUM_OF_TIMES = 1000
 
 def main():
   try:

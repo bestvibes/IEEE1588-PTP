@@ -8,75 +8,28 @@
 #include<stdlib.h>
 //string stuff(memset, strcmp, strlen, etc)
 #include<string.h>
-//gettimeofday()
-#include<sys/time.h>
 //time structs
 #include<time.h>
 //close()
 #include <unistd.h>
+//custom packet functions
+#include "../utils.h"
 
 #define FIXED_BUFFER 16
 #define PORT 2468
 #define HELLO "Hello World!"
 
 //call on error
-void error(char *msg) {
-    perror(msg);
-    exit(1);
-}
+void error(char *msg);
 
 //convert timeval struct to manageable time representation
-long parseTime(struct timeval *tv) {
-    return (((tv -> tv_sec % 3600) * 1000000)) + tv -> tv_usec;
-}
+long parseTime(struct timeval *tv);
 
 //function to receive a packet (sock fd, buff for output, time received, addr of client)
-void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cliAddr) {
-
-	//inits
-    struct timeval tv;
-	ssize_t bytes_recv;
-
-	if(cliAddr != NULL) {
-		struct sockaddr_in temp_cliAddr = {0};
-		socklen_t clilen = sizeof(temp_cliAddr);
-		
-		//get packet (cliAddr and its length are optional params)
-		bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) &temp_cliAddr, &clilen);
-		
-		//assign data
-		*cliAddr = temp_cliAddr;
-	} else {
-		//get packet (cliAddr and its length are optional params)
-		bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) NULL, NULL);
-	}
-
-	//log time received
-	gettimeofday(&tv, NULL);
-	if(t_rcv != NULL) {
-		long t = parseTime(&tv);
-		*t_rcv = t;
-	}
-	
-	//check for error
-    if(bytes_recv < 0) {
-        close(*sock);
-        error("ERROR receiving!");
-    }
-	
-	//debug
-	//printf("received: %s\n", buffer);
-	
-    return;
-}
+void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cliAddr);
 
 //function to send packet (sock fd, client addr, data to be sent) returns time sent
-long sendPacket(int *sock, struct sockaddr_in *client, char data[]) {
-    struct timeval tv;
-    sendto(*sock, data, strlen(data), 0, (struct sockaddr *) client, sizeof(*client));
-    gettimeofday(&tv, NULL);
-    return parseTime(&tv);
-}
+long sendPacket(int *sock, struct sockaddr_in *client, char data[]);
 
 //calculate master-slave difference
 long syncPacket(int *sock) {
@@ -88,16 +41,16 @@ long syncPacket(int *sock) {
 }
 
 //calculate slave-master difference
-long delayPacket(int *sock, struct sockaddr_in *addr) {
+long delayPacket(int *sock, struct sockaddr_in *client) {
     long t3, t4;
-    t3 = sendPacket(sock, addr, "delayReq");
+    t3 = sendPacket(sock, client, "delayReq");
     char buff[FIXED_BUFFER] = {0};
-	receivePacket(sock, buff, NULL, addr);
+	receivePacket(sock, buff, NULL, client);
 	t4 = strtol(buff, (char **) NULL, 10);
     return t4 - t3;
 }
 
-//IEEE 1588 PTP Protocol implementation
+//IEEE 1588 PTP Protocol implementation server-side
 void syncClock(int *times, int *sock, struct sockaddr_in *client) {
 	//inits
 	int largest_offset = -999999999;
@@ -106,11 +59,10 @@ void syncClock(int *times, int *sock, struct sockaddr_in *client) {
 	int smallest_delay = 999999999;
 	int largest_delay = -999999999;
 	int sum_delay = 0;
-    int i = 0;
     sendPacket(sock, client, "ready");
 	
 	//run protocol num of times determined by slave
-    for(i = 0; i < *times; i++) {
+    for(int i = 0; i < *times; i++) {
         long msDiff = syncPacket(sock);
         long smDiff = delayPacket(sock, client);
 		
