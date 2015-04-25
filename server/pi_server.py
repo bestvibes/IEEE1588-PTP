@@ -75,8 +75,8 @@ def main():
 def sync_clock():
   ms_diff, addr = sync_packet();
   sm_diff = delay_packet(addr)
-  print "ms_diff = " + str(ms_diff)
-  print "sm_diff = " + str(sm_diff)
+  #print "ms_diff = " + str(ms_diff)
+  #print "sm_diff = " + str(sm_diff)
   offset = (ms_diff - sm_diff)/2
   OFFSETS.append(offset)
   delay = (ms_diff + sm_diff)/2

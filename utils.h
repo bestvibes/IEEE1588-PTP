@@ -8,6 +8,8 @@
 #include<sys/time.h>
 //time structs
 #include<time.h>
+//close()
+#include<unistd.h>
 
 #define FIXED_BUFFER 16
 
@@ -15,6 +17,11 @@
 void error(char *msg) {
     perror(msg);
     exit(1);
+}
+
+void close_socket(int sock) {
+	printf("\nClosing socket...\n");
+	close(sock);
 }
 
 //convert timeval struct to manageable time representation
@@ -46,17 +53,17 @@ void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct soc
 		gettimeofday(&tv, NULL);
 	}
 
+	//check for error
+    if(bytes_recv < 0) {
+        close_socket(*sock);
+        error("ERROR receiving!");
+    }
+
 	//parse and assign time
 	if(t_rcv != NULL) {
 		long t = parseTime(&tv);
 		*t_rcv = t;
 	}
-	
-	//check for error
-    if(bytes_recv < 0) {
-        close(*sock);
-        error("ERROR receiving!");
-    }
 	
 	//debug
 	//printf("received: %s\n", buffer);

@@ -10,8 +10,9 @@
 #include<string.h>
 //time structs
 #include<time.h>
-//close()
-#include <unistd.h>
+//signal stuff
+#include<signal.h>
+
 //custom packet functions
 #include "../utils.h"
 
@@ -22,6 +23,9 @@
 //call on error
 void error(char *msg);
 
+//close the socket
+void close_socket(int sock);
+
 //convert timeval struct to manageable time representation
 long parseTime(struct timeval *tv);
 
@@ -30,6 +34,8 @@ void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct soc
 
 //function to send packet (sock fd, client addr, data to be sent) returns time sent
 long sendPacket(int *sock, struct sockaddr_in *client, char data[]);
+
+void sig_handler(int signum) { };
 
 //calculate master-slave difference
 long syncPacket(int *sock) {
@@ -129,15 +135,23 @@ int main() {
     
 	//bind socket
     if(bind(sock, (struct sockaddr *) &bindAddr, sizeof(bindAddr)) < 0) {
-        close(sock);
+        close_socket(sock);
         error("ERROR binding!\n");
     } else {
         printf("Bound successfully!\n");
     }
     
+	//signal handling to elegantly exit and close socket on ctrl+c
+	struct sigaction sa;
+	sa.sa_handler = sig_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
+	
+	
 	//determine what to do
-//    while(1) {
-        printf("Ready to receive requests...\n");
+    while(1) {
+        printf("Ready to receive requests...\n\n");
         struct sockaddr_in addr;
 		char buffer[FIXED_BUFFER] = {0};
         receivePacket(&sock, buffer, NULL, &addr);
@@ -151,8 +165,6 @@ int main() {
 		else {
 			sendPacket(&sock, &addr, HELLO);
 		}
-//    }
-    
-    close(sock);
+    }
 	return 0;
 }
