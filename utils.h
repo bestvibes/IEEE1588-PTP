@@ -25,29 +25,29 @@ void close_socket(int sock) {
 }
 
 //convert timeval struct to manageable time representation
-long parseTime(struct timeval *tv) {
+long parse_time(struct timeval *tv) {
     return (((tv -> tv_sec % 3600) * 1000000)) + tv -> tv_usec;
 }
 
 //function to receive a packet (sock fd, buff for output, time received, addr of client)
-void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cliAddr) {
+void receive_packet(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cli_addr) {
 
 	//inits
     struct timeval tv;
 	ssize_t bytes_recv;
 
-	if(cliAddr != NULL) {
-		struct sockaddr_in temp_cliAddr = {0};
-		socklen_t clilen = sizeof(temp_cliAddr);
+	if(cli_addr != NULL) {
+		struct sockaddr_in temp_cli_addr = {0};
+		socklen_t clilen = sizeof(temp_cli_addr);
 		
-		//get packet (cliAddr and its length are optional params)
-		bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) &temp_cliAddr, &clilen);
+		//get packet (cli_addr and its length are optional params)
+		bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) &temp_cli_addr, &clilen);
 		//log time received
 		gettimeofday(&tv, NULL);
 		//assign data
-		*cliAddr = temp_cliAddr;
+		*cli_addr = temp_cli_addr;
 	} else {
-		//get packet (cliAddr and its length are optional params)
+		//get packet (cli_addr and its length are optional params)
 		bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) NULL, NULL);
 		//log time received
 		gettimeofday(&tv, NULL);
@@ -61,7 +61,7 @@ void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct soc
 
 	//parse and assign time
 	if(t_rcv != NULL) {
-		long t = parseTime(&tv);
+		long t = parse_time(&tv);
 		*t_rcv = t;
 	}
 	
@@ -72,9 +72,9 @@ void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct soc
 }
 
 //function to send packet (sock fd, client addr, data to be sent) returns time sent
-long sendPacket(int *sock, struct sockaddr_in *client, char data[]) {
+long send_packet(int *sock, struct sockaddr_in *client, char data[]) {
     struct timeval tv;
     sendto(*sock, data, strlen(data), 0, (struct sockaddr *) client, sizeof(*client));
     gettimeofday(&tv, NULL);
-    return parseTime(&tv);
+    return parse_time(&tv);
 }

@@ -27,37 +27,37 @@ void error(char *msg);
 void close_socket(int sock);
 
 //convert timeval struct to manageable time representation
-long parseTime(struct timeval *tv);
+long parse_time(struct timeval *tv);
 
 //function to receive a packet (sock fd, buff for output, time received, addr of client)
-void receivePacket(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cliAddr);
+void receive_packet(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cli_addr);
 
 //function to send packet (sock fd, client addr, data to be sent) returns time sent
-long sendPacket(int *sock, struct sockaddr_in *client, char data[]);
+long send_packet(int *sock, struct sockaddr_in *client, char data[]);
 
 void sig_handler(int signum) { };
 
 //calculate master-slave difference
-long syncPacket(int *sock) {
+long sync_packet(int *sock) {
     long t1, t2;
     char buff[FIXED_BUFFER] = {0};
-	receivePacket(sock, buff, &t2, NULL);
+	receive_packet(sock, buff, &t2, NULL);
 	t1 = strtol(buff, (char **) NULL, 10);
     return t2 - t1;
 }
 
 //calculate slave-master difference
-long delayPacket(int *sock, struct sockaddr_in *client) {
+long delay_packet(int *sock, struct sockaddr_in *client) {
     long t3, t4;
-    t3 = sendPacket(sock, client, "delayReq");
+    t3 = send_packet(sock, client, "delay_req");
     char buff[FIXED_BUFFER] = {0};
-	receivePacket(sock, buff, NULL, client);
+	receive_packet(sock, buff, NULL, client);
 	t4 = strtol(buff, (char **) NULL, 10);
     return t4 - t3;
 }
 
 //IEEE 1588 PTP Protocol implementation server-side
-void syncClock(int *times, int *sock, struct sockaddr_in *client) {
+void sync_clock(int *times, int *sock, struct sockaddr_in *client) {
 	//inits
 	int largest_offset = -999999999;
 	int smallest_offset = 999999999;
@@ -65,20 +65,20 @@ void syncClock(int *times, int *sock, struct sockaddr_in *client) {
 	int smallest_delay = 999999999;
 	int largest_delay = -999999999;
 	int sum_delay = 0;
-    sendPacket(sock, client, "ready");
+    send_packet(sock, client, "ready");
 	
 	//run protocol num of times determined by slave
     for(int i = 0; i < *times; i++) {
-        long msDiff = syncPacket(sock);
-        long smDiff = delayPacket(sock, client);
+        long ms_diff = sync_packet(sock);
+        long sm_diff = delay_packet(sock, client);
 		
 		//debug
-		//printf("msDiff = %ld ** ", msDiff);
-		//printf("smDiff = %ld\n", smDiff);
+		//printf("ms_diff = %ld ** ", ms_diff);
+		//printf("sm_diff = %ld\n", sm_diff);
 		
 		//http://www.nist.gov/el/isd/ieee/upload/tutorial-basic.pdf  <- page 20 to derive formulas
-        int offset = (msDiff - smDiff)/2;
-		long delay = (msDiff + smDiff)/2;
+        int offset = (ms_diff - sm_diff)/2;
+		long delay = (ms_diff + sm_diff)/2;
 		
 		//calculate averages, min, max
         sum_offset = sum_offset + offset;
@@ -97,7 +97,7 @@ void syncClock(int *times, int *sock, struct sockaddr_in *client) {
 			smallest_delay = delay;
 		}
 		
-		sendPacket(sock, client, "next");
+		send_packet(sock, client, "next");
     }
 	
 	//print results
@@ -115,7 +115,7 @@ int main() {
 
 	//inits
     int sock;
-    struct sockaddr_in bindAddr;
+    struct sockaddr_in bind_addr;
     
 	//create socket file descriptor( AF_INET = ipv4 address family; SOCK_DGRAM = UDP; 0 = default protocol)
     sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -127,14 +127,14 @@ int main() {
     }
     
 	//set details for socket to bind
-    memset(&bindAddr, '\0', sizeof(bindAddr));
-    bindAddr.sin_family = AF_INET;
-    bindAddr.sin_addr.s_addr = INADDR_ANY;  //bind to all interfaces
+    memset(&bind_addr, '\0', sizeof(bind_addr));
+    bind_addr.sin_family = AF_INET;
+    bind_addr.sin_addr.s_addr = INADDR_ANY;  //bind to all interfaces
 	//htons = host to network byte order, necessary for universal understanding by all machines
-    bindAddr.sin_port = htons(PORT);
+    bind_addr.sin_port = htons(PORT);
     
 	//bind socket
-    if(bind(sock, (struct sockaddr *) &bindAddr, sizeof(bindAddr)) < 0) {
+    if(bind(sock, (struct sockaddr *) &bind_addr, sizeof(bind_addr)) < 0) {
         close_socket(sock);
         error("ERROR binding!\n");
     } else {
@@ -154,16 +154,16 @@ int main() {
         printf("Ready to receive requests...\n\n");
         struct sockaddr_in addr;
 		char buffer[FIXED_BUFFER] = {0};
-        receivePacket(&sock, buffer, NULL, &addr);
+        receive_packet(&sock, buffer, NULL, &addr);
         if(strcmp(buffer, "sync") == 0) {
-			sendPacket(&sock, &addr, "ready");
+			send_packet(&sock, &addr, "ready");
 			char buffer[FIXED_BUFFER] = {0};
-            receivePacket(&sock, buffer, NULL, &addr);
+            receive_packet(&sock, buffer, NULL, &addr);
             int times = (int) strtol(buffer, (char **) NULL, 10);
-            syncClock(&times, &sock, &addr);
+            sync_clock(&times, &sock, &addr);
         }
 		else {
-			sendPacket(&sock, &addr, HELLO);
+			send_packet(&sock, &addr, HELLO);
 		}
     }
 	return 0;
