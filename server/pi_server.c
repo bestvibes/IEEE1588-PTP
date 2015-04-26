@@ -65,10 +65,11 @@ void sync_clock(int *times, int *sock, struct sockaddr_in *client) {
 	int smallest_delay = 999999999;
 	int largest_delay = -999999999;
 	int sum_delay = 0;
+	int i; //to prevent C99 error
     send_packet(sock, client, "ready");
 	
 	//run protocol num of times determined by slave
-    for(int i = 0; i < *times; i++) {
+    for(i = 0; i < *times; i++) {
         long ms_diff = sync_packet(sock);
         long sm_diff = delay_packet(sock, client);
 		
@@ -151,7 +152,7 @@ int main() {
 	
 	//determine what to do
     while(1) {
-        printf("Ready to receive requests...\n\n");
+        printf("\nReady to receive requests...\n");
         struct sockaddr_in addr;
 		char buffer[FIXED_BUFFER] = {0};
         receive_packet(&sock, buffer, NULL, &addr);

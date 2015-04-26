@@ -24,7 +24,8 @@
 #define BIND_PORT 2467 //if running on same machine
 #define HELLO "Hello World!"
 //#define ADDRESS "192.168.137.2"
-#define ADDRESS "127.0.0.1"
+//#define ADDRESS "127.0.0.1"
+#define ADDRESS "10.0.0.26"
 #define NUM_OF_TIMES 1000
 
 //call on error
@@ -63,9 +64,10 @@ void delay_packet(int *sock, struct sockaddr_in *server) {
 void sync_clock(int *sock, struct sockaddr_in *server) {
 	//inits
 	char useless_buffer[FIXED_BUFFER];
+	int i; //to prevent C99 error
 	
 	//run protocol however number of times
-    for(int i = 0; i < NUM_OF_TIMES; i++) {
+    for(i = 0; i < NUM_OF_TIMES; i++) {
         sync_packet(sock, server);
         delay_packet(sock, server);
 		receive_packet(sock, useless_buffer, NULL, server);
@@ -77,7 +79,6 @@ int main() {
 
 	//inits
     int sock;
-    struct sockaddr_in bind_addr;
 	struct sockaddr_in server_addr;
 	
 	//set details for socket to send data
@@ -94,21 +95,6 @@ int main() {
         error("ERROR creating socket!");
     } else {
         printf("Socket created!\n");
-    }
-    
-	//set details for socket to bind
-    memset(&bind_addr, '\0', sizeof(bind_addr));
-    bind_addr.sin_family = AF_INET;
-    bind_addr.sin_addr.s_addr = INADDR_ANY;  //bind to all interfaces
-	//htons = host to network byte order, necessary for universal understanding by all machines
-    bind_addr.sin_port = htons(BIND_PORT);
-    
-	//bind socket
-    if(bind(sock, (struct sockaddr *) &bind_addr, sizeof(bind_addr)) < 0) {
-        close(sock);
-        error("ERROR binding!\n");
-    } else {
-        printf("Bound successfully!\n");
     }
     
 	//sync time with server
