@@ -66,6 +66,8 @@ void sync_clock(int *times, int *sock, struct sockaddr_in *client) {
 	int largest_delay = -999999999;
 	int sum_delay = 0;
 	int i; //to prevent C99 error
+	
+	printf("Running IEEE1588 PTP...\n");
     send_packet(sock, client, "ready");
 	
 	//run protocol num of times determined by slave
