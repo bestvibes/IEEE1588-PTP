@@ -20,8 +20,8 @@ void error(char *msg) {
 }
 
 void close_socket(int sock) {
-	printf("\nClosing socket...\n");
-	close(sock);
+    printf("\nClosing socket...\n");
+    close(sock);
 }
 
 //convert timeval struct to manageable time representation
@@ -32,42 +32,42 @@ long parse_time(struct timeval *tv) {
 //function to receive a packet (sock fd, buff for output, time received, addr of client)
 void receive_packet(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cli_addr) {
 
-	//inits
+    //inits
     struct timeval tv;
-	ssize_t bytes_recv;
+    ssize_t bytes_recv;
 
-	if(cli_addr != NULL) {
-		struct sockaddr_in temp_cli_addr = {0};
-		socklen_t clilen = sizeof(temp_cli_addr);
-		
-		//get packet (cli_addr and its length are optional params)
-		bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) &temp_cli_addr, &clilen);
-		//log time received
-		gettimeofday(&tv, NULL);
-		//assign data
-		*cli_addr = temp_cli_addr;
-	} else {
-		//get packet (cli_addr and its length are optional params)
-		bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) NULL, NULL);
-		//log time received
-		gettimeofday(&tv, NULL);
-	}
+    if(cli_addr != NULL) {
+        struct sockaddr_in temp_cli_addr = {0};
+        socklen_t clilen = sizeof(temp_cli_addr);
+        
+        //get packet (cli_addr and its length are optional params)
+        bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) &temp_cli_addr, &clilen);
+        //log time received
+        gettimeofday(&tv, NULL);
+        //assign data
+        *cli_addr = temp_cli_addr;
+    } else {
+        //get packet (cli_addr and its length are optional params)
+        bytes_recv = recvfrom(*sock, buffer, FIXED_BUFFER, 0, (struct sockaddr *) NULL, NULL);
+        //log time received
+        gettimeofday(&tv, NULL);
+    }
 
-	//check for error
+    //check for error
     if(bytes_recv < 0) {
         close_socket(*sock);
         error("ERROR receiving!");
     }
 
-	//parse and assign time
-	if(t_rcv != NULL) {
-		long t = parse_time(&tv);
-		*t_rcv = t;
-	}
-	
-	//debug
-	//printf("received: %s\n", buffer);
-	
+    //parse and assign time
+    if(t_rcv != NULL) {
+        long t = parse_time(&tv);
+        *t_rcv = t;
+    }
+    
+    //debug
+    //printf("received: %s\n", buffer);
+    
     return;
 }
 

@@ -1,3 +1,9 @@
+//netmap!!
+#define NETMAP_WITH_LIBS
+#include<net/netmap_user.h>
+
+//pollfd
+#include<sys/poll.h>
 //default, printf, etc
 #include<stdio.h>
 //socket stuff
@@ -12,6 +18,8 @@
 #include<time.h>
 //signal stuff
 #include<signal.h>
+//uint32_t
+#include<stdint.h>
 
 //custom packet functions
 #include "../utils.h"
@@ -114,7 +122,33 @@ void sync_clock(int *times, int *sock, struct sockaddr_in *client) {
     printf("Largest Delay = %d\n", largest_delay);
 }
 
+void consume_pkt(u_char *buff, uint32_t len) {
+    printf("%s", buff);
+}
+
 int main() {
+    //inits
+    struct nm_desc *d;
+    struct pollfd fds;
+    u_char *buf;
+    struct nm_pkthdr h;
+    
+    d = nm_open("netmap:eth0", NULL, 0, 0);
+    fds.fd = NETMAP_FD(d);
+    fds.events = POLLIN;
+    while(1) {
+        poll(&fds, 1, -1);
+        while( (buf = nm_nextpkt(d, &h)) ) {
+            consume_pkt(buf, h.len);
+        }
+    }
+    nm_close(d);
+}
+
+
+
+
+/*int main() {
 
     //inits
     int sock;
@@ -170,4 +204,4 @@ int main() {
         }
     }
     return 0;
-}
+}*/
