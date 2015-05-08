@@ -13,6 +13,15 @@
 
 #define FIXED_BUFFER 16
 
+#define ERROR(_fmt, ...)						\
+	do {										\
+		char msg[64];							\
+		sprintf(msg, "%s [%d] " _fmt,			\
+		  __FUNCTION__, __LINE__, ##__VA_ARGS__);  \
+		perror(msg);						 	\
+		printf("Exitting...\n");				\
+        } while (0)
+
 //call on error
 void error(char *msg) {
     perror(msg);

@@ -25,7 +25,7 @@
 #include "../utils.h"
 
 #define FIXED_BUFFER 16
-#define PORT 2468
+#define INTERFACE "eth0"
 #define HELLO "Hello World!"
 
 //call on error
@@ -43,7 +43,9 @@ void receive_packet(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct so
 //function to send packet (sock fd, client addr, data to be sent) returns time sent
 long send_packet(int *sock, struct sockaddr_in *client, char data[]);
 
-void sig_handler(int signum) { };
+int stop = 0;
+
+void sig_handler(int signum) { stop = 1; perror("Stopping"); };
 
 //calculate master-slave difference
 long sync_packet(int *sock) {
@@ -126,23 +128,128 @@ void consume_pkt(u_char *buff, uint32_t len) {
     printf("%s", buff);
 }
 
-int main() {
+void netmap_close(struct nm_desc *d)
+{
+	if (d == NULL)
+		return;
+	if (d->done_mmap && d->mem)
+		munmap(d->mem, d->memsize);
+	if (d->fd != -1)
+		close(d->fd);
+	bzero(d, sizeof(*d));
+	free(d);
+	printf("netmap closed...\n");
+	return;
+}
+
+struct nm_desc * netmap_open() {
     //inits
     struct nm_desc *d;
+	uint32_t nr_flags = NR_REG_ALL_NIC;
+	
+	//allocate memory and set up the descriptor
+	d = (struct nm_desc *)calloc(1, sizeof(*d));
+	if (d == NULL) {
+		ERROR("nm_desc alloc failure");
+		exit(EXIT_FAILURE);
+	}
+	d->self = d; //just to indicate this is a netmap configuration
+	
+	printf("opening /dev/netmap...\n");
+	d->fd = open("/dev/netmap", O_RDWR);
+	if (d->fd < 0) {
+		ERROR("cannot open /dev/netmap");
+		netmap_close(d);
+		exit(EXIT_FAILURE);
+	}
+	
+	
+	d->req.nr_version = NETMAP_API;
+	d->req.nr_flags = nr_flags;
+	strcpy(d->req.nr_name, INTERFACE);
+	d->req.nr_name[strlen(d->req.nr_name)] = '\0'; //null terminate the string
+	
+	//configure the network interface
+	printf("executing ioctl...\n");
+	if (ioctl(d->fd, NIOCREGIF, &d->req)) {
+			ERROR("ioctl NIOCREGIF failed");
+			netmap_close(d);
+			exit(EXIT_FAILURE);
+	}
+	
+	//memory map netmap
+	printf("mmaping...\n");
+	d->memsize = d->req.nr_memsize;
+	d->mem = mmap(0, d->memsize, PROT_READ | PROT_WRITE, MAP_SHARED, d->fd, 0);
+	if(d->mem == MAP_FAILED) {
+		ERROR("mmap failed");
+		netmap_close(d);
+		exit(EXIT_FAILURE);
+	}
+	d->done_mmap = 1;
+	
+	//set up rings locations
+	
+	//braces used for scope
+	{
+		struct netmap_if *nifp = NETMAP_IF(d->mem, d->req.nr_offset);
+		struct netmap_ring *r = NETMAP_RXRING(nifp, );
+
+		*(struct netmap_if **)(uintptr_t)&d->nifp = nifp;
+		*(struct netmap_ring **)(uintptr_t)&d->some_ring = r;
+		*(void **)(uintptr_t)&d->buf_start = NETMAP_BUF(r, 0);
+		*(void **)(uintptr_t)&d->buf_end = (char *) d->mem + d->memsize;
+	}
+	
+	d->first_tx_ring = 0;
+	d->first_rx_ring = 0;
+	
+	d->last_tx_ring = d->req.nr_tx_rings - 1;
+	d->last_rx_ring = d->req.nr_rx_rings - 1;
+	
+	d->cur_tx_ring = d->first_tx_ring;
+	d->cur_rx_ring = d->first_rx_ring;
+	
+	return d;
+}
+
+int main() {
+    //inits
+	struct nm_desc *d;
     struct pollfd fds;
-    u_char *buf;
-    struct nm_pkthdr h;
-    
-    d = nm_open("netmap:eth0", NULL, 0, 0);
-    fds.fd = NETMAP_FD(d);
+    //u_char *buf;
+    //struct nm_pkthdr h;
+	int i;
+	
+	d = netmap_open();
+	
+    //signal handling to elegantly exit and close socket on ctrl+c
+    struct sigaction sa;
+    sa.sa_handler = sig_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, NULL);
+	
+	
+    fds.fd = d->fd;
     fds.events = POLLIN;
-    while(1) {
-        poll(&fds, 1, -1);
-        while( (buf = nm_nextpkt(d, &h)) ) {
-            consume_pkt(buf, h.len);
-        }
+	printf("ready to poll...\n");
+    while(!stop) {
+		printf("polling...\n");
+		i = poll(&fds, 1, 5000);
+		if (i > 0 && !(fds.revents & POLLERR))
+			printf("got something!\n");
+			break;
+		printf("waiting for initial packets, poll returns %d %d\n",
+		i, fds.revents);
+		
+		
+        //while( (buf = nm_nextpkt(d, &h)) ) {
+            //consume_pkt(buf, h.len);
+			//}
     }
-    nm_close(d);
+    netmap_close(d);
+	return 0;
 }
 
 
