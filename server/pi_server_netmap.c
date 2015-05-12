@@ -20,11 +20,14 @@
 #include<signal.h>
 //uint32_t
 #include<stdint.h>
+//isprint()
+#include <ctype.h>
 
 //custom packet functions
 #include "../utils.h"
 
 #define FIXED_BUFFER 16
+#define RECEIVE_PORT 2468
 #define INTERFACE "eth0"
 #define HELLO "Hello World!"
 
@@ -124,12 +127,7 @@ void sync_clock(int *times, int *sock, struct sockaddr_in *client) {
     printf("Largest Delay = %d\n", largest_delay);
 }
 
-void consume_pkt(u_char *buff, uint32_t len) {
-    printf("%s", buff);
-}
-
-void netmap_close(struct nm_desc *d)
-{
+void netmap_close(struct nm_desc *d) {
 	if (d == NULL)
 		return;
 	if (d->done_mmap && d->mem)
@@ -213,12 +211,75 @@ struct nm_desc * netmap_open() {
 	return d;
 }
 
+static char * netmap_nextpkt(struct nm_desc *d, struct nm_pkthdr *hdr) {
+	
+	int ri = d->cur_rx_ring;
+	
+	do {
+		struct netmap_ring *ring = NETMAP_RXRING(d->nifp, ri);
+		if(!nm_ring_empty(ring)) {
+			u_int cur = ring->cur;
+			u_int idx = ring->slot[cur].buf_idx;
+			char *buf = (char *) NETMAP_BUF(ring, idx);
+			
+			hdr->ts = ring->ts;
+			hdr->len = hdr->caplen = ring->slot[cur].len;
+			ring->cur = nm_ring_next(ring, cur);
+			ring->head = ring->cur;
+			d->cur_rx_ring = ri;
+			return buf;
+		}
+		ri++;
+		if(ri > d->last_rx_ring) {
+			ri = d->first_rx_ring;
+		}
+	} while(ri != d->cur_rx_ring);
+	return NULL; //nothing found :(
+}
+
+
+/* Check the payload of the packet for errors (use it for debug).
+ * Look for consecutive ascii representations of the size of the packet.
+ */
+static void
+dump_payload(char *p, int len)
+{
+	char buf[128];
+	int i, j, i0;
+
+	/* get the length in ASCII of the length of the packet. */
+
+	/*printf("ring %p cur %5d [buf %6d flags 0x%04x len %5d]\n",
+		ring, cur, ring->slot[cur].buf_idx,
+		ring->slot[cur].flags, len);*/
+	/* hexdump routine */
+	for (i = 0; i < len; ) {
+		memset(buf, sizeof(buf), ' ');
+		sprintf(buf, "%5d: ", i);
+		i0 = i;
+		for (j=0; j < 16 && i < len; i++, j++)
+			sprintf(buf+7+j*3, "%02x ", (uint8_t)(p[i]));
+		i = i0;
+		for (j=0; j < 16 && i < len; i++, j++)
+			sprintf(buf+7+j + 48, "%c",
+				isprint(p[i]) ? p[i] : '.');
+		printf("%s\n", buf);
+	}
+}
+
+
+
+
+
+
+
+
 int main() {
     //inits
 	struct nm_desc *d;
     struct pollfd fds;
-    //u_char *buf;
-    //struct nm_pkthdr h;
+    char *buf;
+    struct nm_pkthdr h;
 	int i;
 	
 	d = netmap_open();
@@ -237,16 +298,18 @@ int main() {
     while(!stop) {
 		printf("polling...\n");
 		i = poll(&fds, 1, 5000);
-		if (i > 0 && !(fds.revents & POLLERR))
-			printf("got something!\n");
-			break;
-		printf("waiting for initial packets, poll returns %d %d\n",
-		i, fds.revents);
-		
-		
-        //while( (buf = nm_nextpkt(d, &h)) ) {
-            //consume_pkt(buf, h.len);
-			//}
+		if (i > 0 && !(fds.revents & POLLERR)) {
+			buf = netmap_nextpkt(d, &h);
+			
+			//37th and 38th bytes in packet are destination port
+			if((buf[36] << 8 | buf[37]) == RECEIVE_PORT) {
+				printf("got something...\n");
+				dump_payload(buf, h.len);
+			}
+		} else {
+			printf("waiting for initial packets, poll returns %d %d\n",
+			i, fds.revents);
+		}
     }
     netmap_close(d);
 	return 0;
