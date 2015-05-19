@@ -15,7 +15,7 @@ from datetime import datetime
 import time
 
 server_socket = None
-ADDRESS = "10.0.0.26"
+ADDRESS = "10.0.0.19"
 #ADDRESS = "192.168.137.2"
 #ADDRESS = "127.0.0.1"
 PORT = 2468
