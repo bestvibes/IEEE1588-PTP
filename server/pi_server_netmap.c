@@ -241,29 +241,25 @@ static char * netmap_nextpkt(struct nm_desc *d, struct nm_pkthdr *hdr) {
 /* Check the payload of the packet for errors (use it for debug).
  * Look for consecutive ascii representations of the size of the packet.
  */
-static void
-dump_payload(char *p, int len)
+static void dump_payload(char *p, int len)
 {
 	char buf[128];
-	int i, j, i0;
+	int i, j, k, i0;
+	k = 0;
 
-	/* get the length in ASCII of the length of the packet. */
-
-	/*printf("ring %p cur %5d [buf %6d flags 0x%04x len %5d]\n",
-		ring, cur, ring->slot[cur].buf_idx,
-		ring->slot[cur].flags, len);*/
 	/* hexdump routine */
 	for (i = 0; i < len; ) {
 		memset(buf, sizeof(buf), ' ');
-		sprintf(buf, "%5d: ", i);
+		sprintf(buf, "%04d: ", k);
 		i0 = i;
 		for (j=0; j < 16 && i < len; i++, j++)
-			sprintf(buf+7+j*3, "%02x ", (uint8_t)(p[i]));
+			sprintf(buf+6+j*3, "%02x ", (uint8_t)(p[i]));
 		i = i0;
 		for (j=0; j < 16 && i < len; i++, j++)
-			sprintf(buf+7+j + 48, "%c",
+			sprintf(buf+6+j + 48, "%c",
 				isprint(p[i]) ? p[i] : '.');
 		printf("%s\n", buf);
+		k = k+10;
 	}
 }
 
@@ -300,11 +296,16 @@ int main() {
 		i = poll(&fds, 1, 5000);
 		if (i > 0 && !(fds.revents & POLLERR)) {
 			buf = netmap_nextpkt(d, &h);
-			
+			//if(h.len != 215)
+			//	dump_payload(buf, h.len);
 			//37th and 38th bytes in packet are destination port
 			if((buf[36] << 8 | buf[37]) == RECEIVE_PORT) {
-				printf("got something...\n");
+				printf("got something USEFUL...\n");
 				dump_payload(buf, h.len);
+			} else {
+				printf("got something USELESS... %d\n", (buf[36] << 8 | buf[37]));
+				//if(h.len != 215)
+				//	dump_payload(buf, h.len);
 			}
 		} else {
 			printf("waiting for initial packets, poll returns %d %d\n",

@@ -39,7 +39,8 @@ def main():
     server_socket.close()
     sys.exit(-1)
 
-  send("hello world")
+  #send("hello world")
+  send(get_time(datetime.now()))
 
 def recv():
   try:
@@ -61,6 +62,14 @@ def send(data):
     print "Tried to send: " + data
     server_socket.close()
     sys.exit(-1)
+    
+def get_time(time):
+  #hours = time.hour * 3600000000
+  minutes = time.minute * 60000000
+  seconds = time.second * 1000000
+  #milliseconds = time.millisecond * 1000
+  microseconds = time.microsecond
+  return minutes + seconds + microseconds
 
 if __name__ == '__main__':
     main()

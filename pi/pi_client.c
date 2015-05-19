@@ -25,7 +25,7 @@
 #define HELLO "Hello World!"
 //#define ADDRESS "192.168.137.2"
 //#define ADDRESS "127.0.0.1"
-#define ADDRESS "10.0.0.26"
+#define ADDRESS "10.0.0.19"
 #define NUM_OF_TIMES 1000
 
 //call on error
