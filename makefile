@@ -1,9 +1,15 @@
 #CC=gcc
 CFLAGS= -O3
-OUT_CLIENT=pi/client.out
-FILENAME_CLIENT=pi/pi_client.c
-OUT_SERVER=server/server.out
+
+FILENAME_CLIENT=client/client.c
+OUT_CLIENT=client/client.out
+FILENAME_CLIENT_TIMESTAMP=client/client_timestamp.c
+OUT_CLIENT_TIMESTAMP=client/client_timestamp.out
+
 FILENAME_SERVER=server/pi_server.c
+OUT_SERVER=server/server.out
+FILENAME_SERVER_NETMAP=server/server
+
 HEADER=utils.h
 
 default: $(OUT_CLIENT) $(OUT_SERVER)

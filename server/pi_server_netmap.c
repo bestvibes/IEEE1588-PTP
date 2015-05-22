@@ -290,10 +290,13 @@ int main() {
             buf = netmap_nextpkt(d, &h);
             //37th and 38th bytes in packet are destination port
             if((buf[36] << 8 | buf[37]) == RECEIVE_PORT) {
-                printf("got something USEFUL...\n");
+                printf("got something USEFUL... LEN:%d\n", h.len);
+                //assume lenth will be shorter than to overflow to second byte (udp packets are 60 bytes)
+                int len = buf[39];
+                printf("LEN:%d -> %.*s\n", len, len, buf+34);
                 dump_payload(buf, h.len);
             } else {
-                printf("got something USELESS... PORT:%d\n", (buf[36] << 8 | buf[37]));
+                printf("got something USELESS... PORT:%d, LEN:%d\n", (buf[36] << 8 | buf[37]), h.len);
                 //if(h.len != 215)
                 //    dump_payload(buf, h.len);
             }

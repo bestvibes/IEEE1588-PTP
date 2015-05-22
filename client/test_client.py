@@ -39,8 +39,8 @@ def main():
     server_socket.close()
     sys.exit(-1)
 
-  #send("hello world")
-  send(get_time(datetime.now()))
+  send("hello world")
+  #send(get_time(datetime.now()))
 
 def recv():
   try:
