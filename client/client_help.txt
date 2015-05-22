@@ -1,0 +1,21 @@
+
+Commands for running IEEE1588 client implementation:
+
+C Flags are "-g -Wall -Werror -O0"
+For optimized compilation make from root directory of project
+
+1. Python implementation
+	python client.py
+
+2. Standard c implementation
+	make c
+	./client.out
+
+3. C implementation using kernel timestamping
+	make timestamp
+	./timestamp_client.out
+
+4. Kernel bypass using netmap
+	make netmap
+	./netmap_client.out
+

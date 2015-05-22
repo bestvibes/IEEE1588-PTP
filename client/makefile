@@ -1,20 +1,35 @@
-#CC=gcc
 CFLAGS= -g -Wall -Werror -O0
-OUT=client.out
+
+#standard c implementation
 FILENAME=client.c
-TIMESTAMP_FILENAME=client_timestamp.c
-TIMESTAMP_OUT=client_timestamp.out
+OUT=client.out
+
+#c with kernel timestamping implementation
+TIMESTAMP_FILENAME=timestamp_client.c
+TIMESTAMP_OUT=timestamp_client.out
+
+#kernel bypass with netmap implementation
+NETMAP_FILENAME=netmap_client.c
+NETMAP_OUT=netmap_client.out
+
 HEADER=../utils.h
 
-$(OUT): $(FILENAME) $(HEADER)
+default:
+	@cat client_help.txt
+
+c: $(FILENAME) $(HEADER)
 	$(CC) $(CFLAGS) $(FILENAME) -o $(OUT)
 
-run:
-	./$(OUT)
+timestamp: $(TIMESTAMP_FILENAME) $(HEADER)
+	$(CC) $(CFLAGS) $(TIMESTAMP_FILENAME) -o $(TIMESTAMP_OUT)
+
+netmap: $(NETMAP_FILENAME) $(HEADER)
+	$(CC) $(CFLAGS) $(NETMAP_FILENAME) -o $(NETMAP_OUT)
 
 clean:
 	$(RM) $(OUT)
 	$(RM) -r $(OUT).dSYM
-
-timestamp:
-	$(CC) $(CFLAGS) $(TIMESTAMP_FILENAME) -o $(TIMESTAMP_OUT)
+	$(RM) $(TIMESTAMP_OUT)
+	$(RM) -r $(TIMESTAMP_OUT).dSYM
+	$(RM) $(NETMAP_OUT)
+	$(RM) -r $(NETMAP_OUT).dSYM

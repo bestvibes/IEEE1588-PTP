@@ -1,0 +1,24 @@
+
+Commands for running IEEE1588 optimized implementation:
+
+C Flags are "-O3”
+For debug compilation make from respective server/client directory of project
+
+1. Python implementation
+	python [server|client]/[server|client].py
+
+2. Standard c implementation
+	make [server|client]_c
+	cd [server|client]
+	./[server|client].out
+
+3. C implementation using kernel timestamping
+	make [server|client]_timestamp
+	cd [server|client]
+	./timestamp_[server|client].out
+
+4. Kernel bypass using netmap
+	make [server|client]_netmap
+	cd [server|client]
+	./netmap_[server|client].out
+
