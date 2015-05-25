@@ -2,23 +2,30 @@
 Commands for running IEEE1588 optimized implementation:
 
 C Flags are "-O3”
-For debug compilation make from respective server/client directory of project
+For debug compilation make from respective slave/master directory of project
 
 1. Python implementation
-	python [server|client]/[server|client].py
+	python [slave|master]/[slave|master].py
 
 2. Standard c implementation
-	make [server|client]_c
-	cd [server|client]
-	./[server|client].out
+	make [slave|master]_c
+	cd [slave|master]
+	./[slave|master].out
 
 3. C implementation using kernel timestamping
-	make [server|client]_timestamp
-	cd [server|client]
-	./timestamp_[server|client].out
+	make [slave|master]_timestamp
+	cd [slave|master]
+	./timestamp_[slave|master].out
 
 4. Kernel bypass using netmap
-	make [server|client]_netmap
-	cd [server|client]
-	./netmap_[server|client].out
+	make [slave|master]_netmap
+	cd [slave|master]
+	./netmap_[slave|master].out
+
+
+To make both master and slave for specific implementation:
+	make all_c
+	make all_timestamp
+	make all_netmap
+
 

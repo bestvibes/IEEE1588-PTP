@@ -1,21 +1,21 @@
 CFLAGS= -g -Wall -Werror -O0
 
 #standard c implementation
-FILENAME=client.c
-OUT=client.out
+FILENAME=master.c
+OUT=master.out
 
 #c with kernel timestamping implementation
-TIMESTAMP_FILENAME=timestamp_client.c
-TIMESTAMP_OUT=timestamp_client.out
+TIMESTAMP_FILENAME=timestamp_master.c
+TIMESTAMP_OUT=timestamp_master.out
 
 #kernel bypass with netmap implementation
-NETMAP_FILENAME=netmap_client.c
-NETMAP_OUT=netmap_client.out
+NETMAP_FILENAME=netmap_master.c
+NETMAP_OUT=netmap_master.out
 
 HEADER=../utils.h
 
 default:
-	@cat client_help.txt
+	@cat master_help.txt
 
 c: $(FILENAME) $(HEADER)
 	$(CC) $(CFLAGS) $(FILENAME) -o $(OUT)

@@ -26,13 +26,7 @@
 //custom packet functions
 #include "../utils.h"
 
-#define FIXED_BUFFER 16
-#define RECEIVE_PORT 2468
 #define INTERFACE "eth0"
-#define HELLO "Hello World!"
-
-//call on error
-void error(char *msg);
 
 //close the socket
 void close_socket(int sock);
@@ -41,10 +35,10 @@ void close_socket(int sock);
 long parse_time(struct timeval *tv);
 
 //function to receive a packet (sock fd, buff for output, time received, addr of client)
-void receive_packet(int *sock, char buffer[FIXED_BUFFER], long *t_rcv, struct sockaddr_in *cli_addr);
+void receive_packet(int *sock, void *buffer, long *t_rcv, struct sockaddr_in *cli_addr);
 
 //function to send packet (sock fd, client addr, data to be sent) returns time sent
-long send_packet(int *sock, struct sockaddr_in *client, char data[]);
+long send_packet(int *sock, struct sockaddr_in *client, void *data);
 
 int stop = 0;
 
@@ -289,7 +283,7 @@ int main() {
         if (i > 0 && !(fds.revents & POLLERR)) {
             buf = netmap_nextpkt(d, &h);
             //37th and 38th bytes in packet are destination port
-            if((buf[36] << 8 | buf[37]) == RECEIVE_PORT) {
+            if((buf[36] << 8 | buf[37]) == PORT) {
                 printf("got something USEFUL... LEN:%d\n", h.len);
                 //assume lenth will be shorter than to overflow to second byte (udp packets are 60 bytes)
                 int len = buf[39];
@@ -297,8 +291,8 @@ int main() {
                 dump_payload(buf, h.len);
             } else {
                 printf("got something USELESS... PORT:%d, LEN:%d\n", (buf[36] << 8 | buf[37]), h.len);
-                //if(h.len != 215)
-                //    dump_payload(buf, h.len);
+                if(h.len != 215)
+                    dump_payload(buf, h.len);
             }
         } else {
             printf("waiting for initial packets, poll returns %d %d\n",
