@@ -27,3 +27,9 @@ Run the slave on the designated slave machine first, then run the master from th
 **Make sure you configure the slave IP address and the number of times to run the protocol at the top of utils.h in the root directory.**
 
 For instructions on building, run "make" in the root directory. The makefiles in the individual server and pi directories are for debugging purposes.
+
+
+References
+===========
+Netmap: http://info.iet.unipi.it/~luigi/netmap/
+IEEE1588 explanation: http://www.nist.gov/el/isd/ieee/upload/tutorial-basic.pdf
