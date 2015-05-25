@@ -12,17 +12,14 @@
 import socket
 import sys
 from datetime import datetime
+import time
 
 server_socket = None
 ADDRESS = ""
 PORT = 2468
-OFFSETS = []
-DELAYS = []
 
 def main():
   global server_socket
-  global OFFSETS
-  global DELAYS
   try:
     print "Creating socket..."
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -39,18 +36,9 @@ def main():
     server_socket.close()
     sys.exit(-1)
 
-##  try:
-##    print "Starting listen on socket..."
-##    server_socket.listen(5);
-##    print "Now listening on socket..."
-##  except socket.error as e:
-##    print "Error listening: " + str(e) + ". Exitting..."
-##    server_socket.close();
-##    sys.exit(-1)
-
   try:
     while(1):
-      print "\nReady to receive requests"
+      print "\nReady to receive requests on port " + str(PORT) + "..."
       data, addr = server_socket.recvfrom(4096)
       print "Request from " + addr[0]
       if("sync" == data):
@@ -59,12 +47,7 @@ def main():
         server_socket.sendto("ready", addr)
         for i in range(int(num_of_times)):
           sync_clock();
-        print "\n\nAVG OFFSET: %s" % str(sum(OFFSETS) / len(OFFSETS)) + "\nAVG DELAY: %s"% str(sum(DELAYS) / len(DELAYS))
-        print "\n\nMIN OFFSET: %s" % str(min(OFFSETS)) + "\nMIN DELAY: %s"% str(min(DELAYS))
-        print "\n\nMAX OFFSET: %s" % str(max(OFFSETS)) + "\nMAX DELAY: %s"% str(max(DELAYS))
-        #send(output, addr)
-        OFFSETS = []
-        DELAYS = []
+        print "Done!"
       else:
         server_socket.sendto("Hello World!", addr)
   except socket.error as e:
@@ -73,33 +56,24 @@ def main():
     sys.exit(-1)
 
 def sync_clock():
-  ms_diff, addr = sync_packet();
-  sm_diff = delay_packet(addr)
-  #print "ms_diff = " + str(ms_diff)
-  #print "sm_diff = " + str(sm_diff)
-  offset = (ms_diff - sm_diff)/2
-  OFFSETS.append(offset)
-  delay = (ms_diff + sm_diff)/2
-  DELAYS.append(delay)
-  send("ready", addr)
+  addr = sync_packet();
+  delay_packet(addr)
+  recv()
 
 def sync_packet():
   t2, (t1, addr) = recv()
-  ms_diff = long(t2) - long(t1)
-  return (ms_diff, addr)
+  send(t2, addr)
+  return addr
 
 def delay_packet(addr):
-  t3 = get_time(datetime.now())
-  send("delay_req", addr)
-  t, (t4, addr) = recv()
-  sm_diff = long(t4) - long(t3)
-  return sm_diff
+  recv()
+  send(get_time(), addr)
 
 
 def recv():
   try:
     request = server_socket.recvfrom(4096)
-    t = get_time(datetime.now())
+    t = get_time()
     #print "Request from " + str(request[1][0])
     return (t, request)
   except socket.error as e:
@@ -117,13 +91,14 @@ def send(data, addr):
     server_socket.close()
     sys.exit(-1)
 
-def get_time(time):
+def get_time():
   #hours = time.hour * 3600000000
-  minutes = time.minute * 60000000
-  seconds = time.second * 1000000
+  #minutes = time.minute * 60000000
+  #seconds = time.second * 1000000
   #milliseconds = time.millisecond * 1000
-  microseconds = time.microsecond
-  return minutes + seconds + microseconds
+  #microseconds = time.microsecond
+  #return minutes + seconds + microseconds
+  return time.time()
 
 if __name__ == '__main__':
     main()

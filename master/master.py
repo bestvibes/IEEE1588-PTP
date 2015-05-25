@@ -15,11 +15,14 @@ from datetime import datetime
 import time
 
 server_socket = None
-ADDRESS = "10.0.0.19"
+#ADDRESS = "10.0.0.19"
 #ADDRESS = "192.168.137.2"
-#ADDRESS = "127.0.0.1"
+ADDRESS = "127.0.0.1"
 PORT = 2468
 NUM_OF_TIMES = 1000
+
+OFFSETS = []
+DELAYS = []
 
 def main():
   try:
@@ -40,53 +43,52 @@ def main():
     sys.exit(-1)
 
   sync_clock()
-  #ping()
-
-def ping():
-  print "\nPinging"
-  send("ping")
-  t, resp = recv()
-  print resp
   
 def sync_clock():
-  print "\nSyncing time..."
-  #send("sync")
-  #time.sleep(1)
+  print "\nSyncing time with " + ADDRESS + ":" + str(PORT) + "..."
   send("sync")
   t, resp = recv()
-  if(resp == "ready"):
-    send(str(NUM_OF_TIMES))
+  send(str(NUM_OF_TIMES))
 
   t, resp = recv()
 
   if(resp == "ready"):
     time.sleep(1) #to allow for server to get ready
     for i in range(NUM_OF_TIMES):
-      sync_packet()
-      delay_packet()
-      recv()
-      #if(i % 100 == 0):
-      #  print i
-    #t, resp = recv()
-    #print "\n\n" + resp
-    print "Done!"
+      ms_diff = sync_packet()
+      sm_diff = delay_packet()
+
+      offset = (ms_diff - sm_diff)/2;
+      delay = (ms_diff + sm_diff)/2;
+
+      OFFSETS.append(offset)
+      DELAYS.append(delay)
+
+      send("next")
+
+    print "\n\nAVG OFFSET: %sms" % str(sum(OFFSETS) * 1000 / len(OFFSETS)) + "\nAVG DELAY: %sms"% str(sum(DELAYS) * 1000 / len(DELAYS))
+    print "\n\nMIN OFFSET: %sms" % str(min(OFFSETS) * 1000) + "\nMIN DELAY: %sms"% str(min(DELAYS) * 1000)
+    print "\n\nMAX OFFSET: %sms" % str(max(OFFSETS) * 1000) + "\nMAX DELAY: %sms"% str(max(DELAYS) * 1000)
+    print "\nDone!"
   else:
     print "Error syncing times, received: " + resp
 
 def sync_packet():
-  send(get_time(datetime.now()))
+  t1 = send("sync_packet")
+  t, t2 = recv()
+  return float(t2) - float(t1)
 
 def delay_packet():
-  t4, delay_string = recv()
-  send(t4)
+  send("delay_packet")
+  t4, t3 = recv()
+  return float(t4) - float(t3)
 
 
 def recv():
   try:
-    request = server_socket.recv(4096)
-    t = get_time(datetime.now())
-    #print "Response: " + str(request)
-    return (t, request)
+    msg = server_socket.recv(4096)
+    t = get_time()
+    return (t, msg)
   except socket.error as e:
     print "Error while receiving request: " + str(e)
     server_socket.close()
@@ -95,6 +97,8 @@ def recv():
 def send(data):
   try:
     server_socket.sendall(str(data))
+    t = get_time()
+    return t
     #print "Sent:" + str(data)
   except socket.error as e:
     print "Error while sending request: " + str(e)
@@ -102,13 +106,15 @@ def send(data):
     server_socket.close()
     sys.exit(-1)
 
-def get_time(time):
+def get_time():
+  #t = time.time()
   #hours = time.hour * 3600000000
-  minutes = time.minute * 60000000
-  seconds = time.second * 1000000
+  #minutes = time.minute * 60000000
+  #seconds = time.second * 1000000
   #milliseconds = time.millisecond * 1000
-  microseconds = time.microsecond
-  return minutes + seconds + microseconds
+  #microseconds = time.microsecond
+  #return minutes + seconds + microseconds
+  return time.time()
 
 if __name__ == '__main__':
     main()
