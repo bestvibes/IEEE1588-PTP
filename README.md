@@ -1,4 +1,4 @@
-# rPi-IEEE1588
+# IEEE1588-PTP
 An IEEE1588 Precision Time Protocol Time Synchronization Algorithm implementation with a goal to minimize latency and network jitter.
 
 Implementations
