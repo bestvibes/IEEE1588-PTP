@@ -128,7 +128,7 @@ void netmap_close(struct nm_desc *d) {
         munmap(d->mem, d->memsize);
     if (d->fd != -1)
         close(d->fd);
-    bzero(d, sizeof(*d));
+    memset(d, 0, sizeof(*d));
     free(d);
     printf("netmap closed...\n");
     return;
