@@ -19,15 +19,13 @@
 #define NUM_OF_TIMES 1000  //num of times to run protocol
 
 #define FIXED_BUFFER 16
-#define POSITIVE 1
-#define NEGATIVE -1
 
 #define HELLO "Hello World!"
 
-#ifndef likely
+#ifndef likely /* For branch predictions */
     #define likely(x)   __builtin_expect(!!(x), 1)
     #define unlikely(x) __builtin_expect(!!(x), 0)
-#endif /* likely and unlikely */
+#endif
 
 #define TO_NSEC(t) (((long)t[0] * 1000000000L) + t[1])
 

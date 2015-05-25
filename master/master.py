@@ -1,23 +1,12 @@
-#-------------------------------------------------------------------------------
-# Name:        Raspberry Pi Socket Client
-# Purpose:
-#
-# Author:      Vaibhav
-#
-# Created:     20/08/2014
-# Copyright:   (c) Vaibhav 2014
-# Licence:     <your licence>
-#-------------------------------------------------------------------------------
-
 import socket
 import sys
 from datetime import datetime
 import time
 
 server_socket = None
-#ADDRESS = "10.0.0.19"
+ADDRESS = "10.0.0.19"
 #ADDRESS = "192.168.137.2"
-ADDRESS = "127.0.0.1"
+#ADDRESS = "127.0.0.1"
 PORT = 2468
 NUM_OF_TIMES = 1000
 
@@ -66,9 +55,9 @@ def sync_clock():
 
       send("next")
 
-    print "\n\nAVG OFFSET: %sms" % str(sum(OFFSETS) * 1000 / len(OFFSETS)) + "\nAVG DELAY: %sms"% str(sum(DELAYS) * 1000 / len(DELAYS))
-    print "\n\nMIN OFFSET: %sms" % str(min(OFFSETS) * 1000) + "\nMIN DELAY: %sms"% str(min(DELAYS) * 1000)
-    print "\n\nMAX OFFSET: %sms" % str(max(OFFSETS) * 1000) + "\nMAX DELAY: %sms"% str(max(DELAYS) * 1000)
+    print "\n\nAVG OFFSET: %sns" % str(sum(OFFSETS) * 1000000000L / len(OFFSETS)) + "\nAVG DELAY: %sns"% str(sum(DELAYS) * 1000000000L / len(DELAYS))
+    print "\n\nMIN OFFSET: %sns" % str(min(OFFSETS) * 1000000000L) + "\nMIN DELAY: %sns"% str(min(DELAYS) * 1000000000L)
+    print "\n\nMAX OFFSET: %sns" % str(max(OFFSETS) * 1000000000L) + "\nMAX DELAY: %sns"% str(max(DELAYS) * 1000000000L)
     print "\nDone!"
   else:
     print "Error syncing times, received: " + resp
@@ -107,13 +96,6 @@ def send(data):
     sys.exit(-1)
 
 def get_time():
-  #t = time.time()
-  #hours = time.hour * 3600000000
-  #minutes = time.minute * 60000000
-  #seconds = time.second * 1000000
-  #milliseconds = time.millisecond * 1000
-  #microseconds = time.microsecond
-  #return minutes + seconds + microseconds
   return time.time()
 
 if __name__ == '__main__':

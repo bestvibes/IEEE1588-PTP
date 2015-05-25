@@ -1,14 +1,3 @@
-#-------------------------------------------------------------------------------
-# Name:        Raspberry Pi Socket Server
-# Purpose:
-#
-# Author:      Vaibhav
-#
-# Created:     19/08/2014
-# Copyright:   (c) Vaibhav 2014
-# Licence:     <your licence>
-#-------------------------------------------------------------------------------
-
 import socket
 import sys
 from datetime import datetime
@@ -92,12 +81,6 @@ def send(data, addr):
     sys.exit(-1)
 
 def get_time():
-  #hours = time.hour * 3600000000
-  #minutes = time.minute * 60000000
-  #seconds = time.second * 1000000
-  #milliseconds = time.millisecond * 1000
-  #microseconds = time.microsecond
-  #return minutes + seconds + microseconds
   return time.time()
 
 if __name__ == '__main__':
