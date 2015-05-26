@@ -65,6 +65,7 @@ int main() {
 
     //inits
     int sock;
+    int timestamp_flags = 1;
     struct sockaddr_in bind_addr;
     
     //create socket file descriptor( AF_INET = ipv4 address family; SOCK_DGRAM = UDP; 0 = default protocol)
@@ -87,10 +88,18 @@ int main() {
     //bind socket
     if(unlikely(bind(sock, (struct sockaddr *) &bind_addr, sizeof(bind_addr)) < 0)) {
         close_socket(sock);
-        ERROR("ERROR binding!\n");
+        ERROR("ERROR binding!");
         exit(EXIT_FAILURE);
     } else {
         printf("Bound successfully!\n");
+    }
+    
+    if(setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPNS, &timestamp_flags, sizeof(timestamp_flags)) < 0) {
+        close_socket(sock);
+        ERROR("ERROR setting socket timestamp option");
+        exit(EXIT_FAILURE);
+    } else{
+        printf("Enabled socket timestamping!\n");
     }
     
     //signal handling to elegantly exit and close socket on ctrl+c

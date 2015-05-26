@@ -24,11 +24,29 @@
 //#define ADDRESS "127.0.0.1"
 #define ADDRESS "10.0.0.19"
 
-//function to send packet (sock fd, client addr, data to be sent) returns time sent
+static inline void get_time(int in[2]) {
+    if(in != NULL) {
+        //check for nanosecond resolution support
+        #ifndef CLOCK_REALTIME
+            struct timeval tv = {0};
+            gettimeofday(&tv, NULL);
+            in[0] = (int) tv.tv_sec;
+            in[1] = (int) tv.tv_usec * 1000;
+        #else
+            struct timespec ts = {0};
+            clock_gettime(CLOCK_REALTIME, &ts);
+            in[0] = (int) ts.tv_sec;
+            in[1] = (int) ts.tv_nsec;
+        #endif
+    }
+}
+
 struct timeval send_packet(int *sock, struct sockaddr_in *client) {
-    long data[2] = {2147483646, 2147483646};
+    int data[2];//htons(1010);
+    get_time(data);
+    printf("sending: %d %d\n", data[0], data[1]);
     struct timeval tv;
-    sendto(*sock, data, sizeof(data), 0, (struct sockaddr *) client, sizeof(*client));
+    sendto(*sock, &data, sizeof(data), 0, (struct sockaddr *) client, sizeof(*client));
     gettimeofday(&tv, NULL);
     return tv;
 }
@@ -55,8 +73,7 @@ int main() {
         printf("Socket created!\n");
     }
 
-    struct timeval a = send_packet(&sock, &server_addr);
-    printf("%ld %d\n", a.tv_sec, a.tv_usec);
+    send_packet(&sock, &server_addr);
 
     close(sock);
     return 0;

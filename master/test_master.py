@@ -39,7 +39,7 @@ def main():
     server_socket.close()
     sys.exit(-1)
 
-  send("hello world")
+  send(255)
   #send(get_time(datetime.now()))
 
 def recv():
@@ -55,7 +55,7 @@ def recv():
 
 def send(data):
   try:
-    server_socket.sendall(str(data))
+    server_socket.sendall(data)
     #print "Sent:" + str(data)
   except socket.error as e:
     print "Error while sending request: " + str(e)
@@ -63,13 +63,8 @@ def send(data):
     server_socket.close()
     sys.exit(-1)
     
-def get_time(time):
-  #hours = time.hour * 3600000000
-  minutes = time.minute * 60000000
-  seconds = time.second * 1000000
-  #milliseconds = time.millisecond * 1000
-  microseconds = time.microsecond
-  return minutes + seconds + microseconds
+def get_time():
+  return time.time()
 
 if __name__ == '__main__':
     main()
