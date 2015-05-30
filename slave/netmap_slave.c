@@ -201,9 +201,9 @@ int main() {
                 int len = buf[39] - 8;
                 int num[2];
                 int a, junk = 0;
-                for(a = 0; a < len/4; a++) memcpy(&num[a], buf+42+(4*a), 4);
-                for(a = 0; a < 2; a++) {
-                    junk = ntohl(num[a]);
+                for(a = 0; a < len/4; a++) {
+                    memcpy(&num[a], buf+42+(4*a), 4);
+                    junk = ntohs(num[a]);
                 }
                 (void)junk;  //just so compiler sees as used
                 printf("LELELEL: %d %d\n", num[0], num[1]);
