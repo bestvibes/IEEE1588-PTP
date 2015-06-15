@@ -58,6 +58,8 @@ struct ptp_header {
 struct pkt_ptp {
     struct ether_header eh;
     struct ptp_header ph;
+    uint64_t s:48;
+    uint32_t ns;
 } __attribute__((__packed__));
 
 struct pkt {
@@ -260,14 +262,14 @@ struct pkt_ptp *init_ptp_packet(int ptp_type) {
 
     int paylen = PKT_SIZE - sizeof(pkt->eh) - sizeof(pkt->ip);
 
-    eh->ether_type = htons(ETHERTYPE_PTP);          /*PTP over 802.3 ethertype*/
-    eh->ether_shost = shost;                        /*source mac*/
-    eh->ether_dhost = ether_aton(DEST_MAC);         /*destination mac*/
+    eh->ether_type = htons(ETHERTYPE_PTP);              /*PTP over 802.3 ethertype*/
+    memcpy(eh->ether_shost, shost, 6);                  /*source mac*/
+    memcpy(eh->ether_dhost, ether_aton(DEST_MAC), 6);   /*destination mac*/
 
     ph->ptp_ts = 0;
     ph->ptp_type = ptp_type;
     ph->ptp_v = 2;                                  /*PTPv2 IEEE1588-2008*/
-    ph->ptp_ml = ;
+    ph->ptp_ml = ;  /*TODO*/
     ph->ptp_dn = 0;
     ph->ptp_flags = 0;
     ph->ptp_cf = 0;
