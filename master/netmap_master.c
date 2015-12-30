@@ -185,8 +185,9 @@ static char * netmap_nextpkt(struct nm_desc *d, struct nm_pkthdr *hdr) {
 }
 
 
-/* Check the payload of the packet for errors (use it for debug).
- * Prints payload in format recognizable by wireshark
+/**
+ * Check the payload of the packet for errors (use it for debug).
+ * Prints payload in format recognizable by wireshark.
  */
 static void dump_payload(char *p, int len)
 {
