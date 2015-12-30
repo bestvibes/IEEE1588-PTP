@@ -56,7 +56,7 @@ static void sync_clock(int *sock, struct sockaddr_in *slave) {
     int i; /* to prevent C99 error in for loop */
     char useless_buffer[FIXED_BUFFER];
     
-    printf("Running IEEE1588 PTP...\n");
+    printf("Running IEEE1588 PTP %d times...\n", NUM_OF_TIMES);
     receive_packet(sock, useless_buffer, sizeof(useless_buffer), NULL, NULL);
 
     /* run protocol however number of times */
@@ -124,7 +124,7 @@ int main() {
     }
     
     /* sync time with slave */
-    printf("Syncing time with %s:%d...\n", SLAVE_IP, PORT);
+    printf("Syncing time with %s:%d...\n\n", SLAVE_IP, PORT);
     char buffer[FIXED_BUFFER] = {0};
     send_packet(&sock, "sync", 4, NULL, &slave_addr);
     receive_packet(&sock, buffer, sizeof(buffer), NULL, &slave_addr);
