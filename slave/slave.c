@@ -29,7 +29,7 @@ void sig_handler(int signum) { }
 static void sync_packet(int *sock, struct sockaddr_in *master) {
     char useless_buffer[FIXED_BUFFER];
     int t2[2];
-    receive_packet(sock, useless_buffer, sizeof(useless_buffer), t2, NULL);
+    receive_packet(sock, useless_buffer, FIXED_BUFFER, t2, NULL);
     send_packet(sock, t2, sizeof(t2), NULL, master);
 }
 
@@ -37,7 +37,7 @@ static void sync_packet(int *sock, struct sockaddr_in *master) {
 static void delay_packet(int *sock, struct sockaddr_in *master) {
     char useless_buffer[FIXED_BUFFER];
     int t3[2];
-    receive_packet(sock, useless_buffer, sizeof(useless_buffer), NULL, NULL);  /* wait for master to get ready */
+    receive_packet(sock, useless_buffer, FIXED_BUFFER, NULL, NULL);  /* wait for master to get ready */
     get_time(t3);
     send_packet(sock, t3, sizeof(t3), NULL, master);
 }
@@ -55,7 +55,7 @@ static void sync_clock(int times, int *sock, struct sockaddr_in *master) {
     for(i = 0; i < times; i++) {
         sync_packet(sock, master);
         delay_packet(sock, master);
-        receive_packet(sock, useless_buffer, sizeof(useless_buffer), NULL, NULL);
+        receive_packet(sock, useless_buffer, FIXED_BUFFER, NULL, NULL);
     }
 
     printf("Done!\n");
@@ -106,7 +106,7 @@ int main() {
         printf("\nReady to receive requests on port %d...\n", PORT);
         struct sockaddr_in addr = {0};
         char buffer[FIXED_BUFFER] = {0};
-        receive_packet(&sock, buffer, sizeof(buffer), NULL, &addr);
+        receive_packet(&sock, buffer, FIXED_BUFFER, NULL, &addr);
         if(strcmp(buffer, "sync") == 0) {
             send_packet(&sock, "ready", 5, NULL, &addr);
             int t = 0;
