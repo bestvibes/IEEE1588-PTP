@@ -1,20 +1,20 @@
-//default, printf, etc
+/* default, printf, etc */
 #include<stdio.h>
-//socket stuff
+/* socket stuff */
 #include<sys/socket.h>
-//socket structs
+/* socket structs */
 #include<netdb.h>
-//strtol, other string conversion stuff
+/* strtol, other string conversion stuff */
 #include<stdlib.h>
-//string stuff(memset, strcmp, strlen, etc)
+/* string stuff(memset, strcmp, strlen, etc) */
 #include<string.h>
-//gettimeofday()
+/* gettimeofday() */
 #include<sys/time.h>
-//time structs
+/* time structs */
 #include<time.h>
-//close()
+/* close() */
 #include <unistd.h>
-//inet_addr struct
+/* inet_addr struct */
 #include <arpa/inet.h>
 
 #define FIXED_BUFFER 16
@@ -26,7 +26,7 @@
 
 static inline void get_time(int in[2]) {
     if(in != NULL) {
-        //check for nanosecond resolution support
+        /* check for nanosecond resolution support */
         #ifndef CLOCK_REALTIME
             struct timeval tv = {0};
             gettimeofday(&tv, NULL);
@@ -42,7 +42,7 @@ static inline void get_time(int in[2]) {
 }
 
 struct timeval send_packet(int *sock, struct sockaddr_in *client) {
-    int data[2];//htons(1010);
+    int data[2];
     get_time(data);
     printf("sending: %d %d\n", data[0], data[1]);
     struct timeval tv;
@@ -53,18 +53,18 @@ struct timeval send_packet(int *sock, struct sockaddr_in *client) {
 
 int main() {
 
-    //inits
+    /* inits */
     int sock;
     struct sockaddr_in server_addr;
     
-    //set details for socket to send data
+    /* set details for socket to send data */
     memset(&server_addr, '\0', sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr(ADDRESS);  //send to server address
-    //htons = host to network byte order, necessary for universal understanding by all machines
+    server_addr.sin_addr.s_addr = inet_addr(ADDRESS);  /* send to server address */
+    /* htons = host to network byte order, necessary for universal understanding by all machines */
     server_addr.sin_port = htons(PORT);
     
-    //create socket file descriptor( AF_INET = ipv4 address family; SOCK_DGRAM = UDP; 0 = default protocol)
+    /* create socket file descriptor( AF_INET = ipv4 address family; SOCK_DGRAM = UDP; 0 = default protocol) */
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     
     if(sock == -1){

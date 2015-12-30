@@ -1,32 +1,32 @@
-//netmap!!
+/* netmap!! */
 #define NETMAP_WITH_LIBS
 #include<net/netmap_user.h>
 
-//pollfd
+/* pollfd */
 #include<sys/poll.h>
-//default, printf, etc
+/* default, printf, etc */
 #include<stdio.h>
-//socket stuff
+/* socket stuff */
 #include<sys/socket.h>
-//socket structs
+/* socket structs */
 #include<netdb.h>
-//strtol, other string conversion stuff
+/* strtol, other string conversion stuff */
 #include<stdlib.h>
-//string stuff(memset, strcmp, strlen, etc)
+/* string stuff(memset, strcmp, strlen, etc) */
 #include<string.h>
-//time structs
+/* time structs */
 #include<time.h>
-//signal stuff
+/* signal stuff */
 #include<signal.h>
-//uint32_t
+/* uint32_t */
 #include<stdint.h>
-//isprint()
+/* isprint() */
 #include <ctype.h>
-//htons, etc
+/* htons, etc */
 #include<netinet/in.h>
-//ioctl stuff
+/* ioctl stuff */
 #include <sys/ioctl.h>
-//ifreq struct
+/* ifreq struct */
 #include <net/if.h>
 
 
@@ -92,7 +92,7 @@ struct nm_desc * netmap_open() {
     struct nm_desc *d;
     uint32_t nr_flags = NR_REG_ALL_NIC;
 
-    //allocate memory and set up the descriptor
+    /* allocate memory and set up the descriptor */
     d = (struct nm_desc *)calloc(1, sizeof(*d));
     if (unlikely(d == NULL)) {
         ERROR("nm_desc alloc failure");
@@ -112,9 +112,9 @@ struct nm_desc * netmap_open() {
     d->req.nr_version = NETMAP_API;
     d->req.nr_flags = nr_flags;
     strcpy(d->req.nr_name, INTERFACE);
-    d->req.nr_name[strlen(d->req.nr_name)] = '\0'; //null terminate the string
+    d->req.nr_name[strlen(d->req.nr_name)] = '\0'; /* null terminate the string */
 
-    //configure the network interface
+    /* configure the network interface */
     printf("executing ioctl...\n");
     if (unlikely(ioctl(d->fd, NIOCREGIF, &d->req))) {
             ERROR("ioctl NIOCREGIF failed");
@@ -122,7 +122,7 @@ struct nm_desc * netmap_open() {
             exit(EXIT_FAILURE);
     }
 
-    //memory map netmap
+    /* memory map netmap */
     printf("mmaping...\n");
     d->memsize = d->req.nr_memsize;
     d->mem = mmap(0, d->memsize, PROT_READ | PROT_WRITE, MAP_SHARED, d->fd, 0);
@@ -133,9 +133,9 @@ struct nm_desc * netmap_open() {
     }
     d->done_mmap = 1;
 
-    //set up rings locations
+    /* set up rings locations */
 
-    //braces used for scope
+    /* braces used for scope */
     {
         struct netmap_if *nifp = NETMAP_IF(d->mem, d->req.nr_offset);
         struct netmap_ring *r = NETMAP_RXRING(nifp, );
@@ -181,7 +181,7 @@ static char * netmap_nextpkt(struct nm_desc *d, struct nm_pkthdr *hdr) {
             ri = d->first_rx_ring;
         }
     } while(ri != d->cur_rx_ring);
-    return NULL; //nothing found :(
+    return NULL; /* nothing found :( */
 }
 
 
@@ -340,7 +340,7 @@ int main() {
     d = netmap_open();
     nifp = d->nifp;
 
-    //signal handling to elegantly exit and close socket on ctrl+c
+    /* signal handling to elegantly exit and close socket on ctrl+c */
     struct sigaction sa;
     sa.sa_handler = sig_handler;
     sigemptyset(&sa.sa_mask);
@@ -369,10 +369,10 @@ int main() {
 
 
             buf = netmap_nextpkt(d, &h);
-            //37th and 38th bytes in packet are destination port
+            /* 37th and 38th bytes in packet are destination port */
             if((buf[36] << 8 | buf[37]) == PORT) {
                 printf("got something USEFUL... LEN:%d\n", h.len);
-                //assume length will be shorter than to overflow to second byte (so a max length of 255)
+                /* assume length will be shorter than to overflow to second byte (so a max length of 255) */
                 int len = buf[39] - 8;
                 int num[2];
                 int a, junk = 0;
@@ -380,7 +380,7 @@ int main() {
                     memcpy(&num[a], buf+42+(4*a), 4);
                     junk = ntohs(num[a]);
                 }
-                (void)junk;  //just so compiler sees as used
+                (void)junk;  /* just so compiler sees as used */
                 printf("LELELEL: %d %d\n", num[0], num[1]);
                 dump_payload(buf, h.len);
             } else {

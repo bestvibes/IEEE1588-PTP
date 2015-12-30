@@ -1,22 +1,22 @@
-//default, printf, etc
+/* default, printf, etc */
 #include<stdio.h>
-//socket stuff
+/* socket stuff */
 #include<sys/socket.h>
-//socket structs
+/* socket structs */
 #include<netdb.h>
-//gettimeofday()
+/* gettimeofday() */
 #include<sys/time.h>
-//time structs
+/* time structs */
 #include<time.h>
-//close()
+/* close() */
 #include<unistd.h>
 
-//USER-DEFINED SETTINGS
+/* USER-DEFINED SETTINGS */
 #define PORT 2468
-//#define SLAVE_IP "192.168.137.2"
-//#define SLAVE_IP "127.0.0.1"
+/* #define SLAVE_IP "192.168.137.2" */
+/* #define SLAVE_IP "127.0.0.1" */
 #define SLAVE_IP "10.0.0.19"
-#define NUM_OF_TIMES 1000  //num of times to run protocol
+#define NUM_OF_TIMES 1000  /* num of times to run protocol */
 
 #define FIXED_BUFFER 16
 
@@ -45,7 +45,7 @@ inline void close_socket(int sock) {
 
 inline void get_time(int in[2]) {
     if(in != NULL) {
-        //check for nanosecond resolution support
+        /* check for nanosecond resolution support */
         #ifndef CLOCK_REALTIME
             struct timeval tv = {0};
             gettimeofday(&tv, NULL);
@@ -60,7 +60,7 @@ inline void get_time(int in[2]) {
     }
 }
 
-//for timestamp version
+/* for timestamp version */
 /*void recvpacket(int sock, struct sockaddr_in *cli_addr) {
 	char data[256];
 	struct msghdr msg;
@@ -97,11 +97,11 @@ inline void get_time(int in[2]) {
 void receive_packet(int *sock, void *buffer, size_t bufsize, int t_rcv[2], struct sockaddr_in *sender) {
     socklen_t senlen = sizeof(*sender);
     
-    //recv and log time
+    /* recv and log time */
     ssize_t bytes_recv = recvfrom(*sock, buffer, bufsize, 0, (struct sockaddr *) sender, &senlen);
     get_time(t_rcv);
 
-    //check for error
+    /* check for error */
     if(unlikely(bytes_recv < 0)) {
         close_socket(*sock);
         ERROR("ERROR receiving!");
@@ -112,11 +112,11 @@ void receive_packet(int *sock, void *buffer, size_t bufsize, int t_rcv[2], struc
 }
 
 void send_packet(int *sock, void *data, size_t data_size, int t_rcv[2], struct sockaddr_in *receiver) {
-    //send and log time
+    /* send and log time */
     ssize_t bytes_sent = sendto(*sock, data, data_size, 0, (struct sockaddr *) receiver, sizeof(*receiver));
     get_time(t_rcv);
 
-    //check for error
+    /* check for error */
     if(unlikely(bytes_sent < 0)) {
         close_socket(*sock);
         ERROR("ERROR sending!");
