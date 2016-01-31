@@ -19,7 +19,8 @@
 /* inet_addr struct */
 #include <arpa/inet.h>
 
-#include "../utils.h"
+#include "../utils/common.h"
+#include "../utils/stdnetwork.h"
 
 void close_socket(int sock);
 

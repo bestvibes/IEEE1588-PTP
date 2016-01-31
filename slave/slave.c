@@ -13,7 +13,8 @@
 /* signal stuff */
 #include<signal.h>
 
-#include "../utils.h"
+#include "../utils/common.h"
+#include "../utils/stdnetwork.h"
 
 void close_socket(int sock);
 
