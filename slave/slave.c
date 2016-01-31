@@ -8,13 +8,11 @@
 #include<stdlib.h>
 /* string stuff(memset, strcmp, strlen, etc) */
 #include<string.h>
-/* time structs */
-#include<time.h>
 /* signal stuff */
 #include<signal.h>
 
-#include "../utils/common.h"
-#include "../utils/stdnetwork.h"
+#include "../libs/common.h"
+#include "../libs/stdnetwork.h"
 
 void close_socket(int sock);
 

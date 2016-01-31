@@ -13,9 +13,9 @@
 /* pollfd */
 #include<sys/poll.h>
 
-#include "../utils/common.h"
-#include "../utils/netmap_network.h"
-#include "../utils/debug.h"
+#include "../libs/common.h"
+#include "../libs/netmap_network.h"
+#include "../libs/debug.h"
 
 int stop = 0;
 

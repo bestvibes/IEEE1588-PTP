@@ -12,15 +12,13 @@
 #include<string.h>
 /* gettimeofday() */
 #include<sys/time.h>
-/* time structs */
-#include<time.h>
 /* close() */
 #include <unistd.h>
 /* inet_addr struct */
 #include <arpa/inet.h>
 
-#include "../utils/common.h"
-#include "../utils/stdnetwork.h"
+#include "../libs/common.h"
+#include "../libs/stdnetwork.h"
 
 void close_socket(int sock);
 
