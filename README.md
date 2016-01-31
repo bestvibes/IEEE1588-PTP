@@ -24,7 +24,7 @@ Running
 
 Run the slave on the designated slave machine first, then run the master from the designated master.
 
-**Make sure you configure the slave IP address and the number of times to run the protocol at the top of utils.h in the root directory. This implementation assumes that the master is a 64-bit machine, but the slave can be 32-bit.**
+**Make sure you configure the slave IP address and the number of times to run the protocol at the top of `libs/common.h`. This implementation assumes that the master is a 64-bit machine, but the slave can be 32-bit.**
 
 For instructions on building, run "make" in the root directory. The makefiles in the individual server and pi directories are for debugging purposes.
 
