@@ -12,7 +12,7 @@ TIMESTAMP_OUT=timestamp_master.out
 NETMAP_FILENAME=netmap_master.c
 NETMAP_OUT=netmap_master.out
 
-HEADER=../utils.h
+HEADER=../libs/
 
 default:
 	@cat master_help.txt

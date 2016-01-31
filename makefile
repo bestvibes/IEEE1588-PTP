@@ -24,7 +24,7 @@ slave_TIMESTAMP_OUT=slave/timestamp_slave.out
 slave_NETMAP_FILENAME=slave/netmap_slave.c
 slave_NETMAP_OUT=slave/netmap_slave.out
 
-HEADER=utils.h
+HEADER=libs/
 
 default:
 	@cat root_help.txt

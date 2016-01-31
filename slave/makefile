@@ -13,7 +13,7 @@ NETMAP_FILENAME=netmap_slave.c
 NETMAP_OUT=netmap_slave.out
 
 
-HEADER=../utils.h
+HEADER=../libs/
 
 default:
 	@cat slave_help.txt
