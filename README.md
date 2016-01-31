@@ -4,13 +4,13 @@ An IEEE1588 Precision Time Protocol Time Synchronization Algorithm implementatio
 Implementations
 ================
 
-1. **Python**: Probably the highest level implementation possible using standard sockets
+1. **Python**: Probably the highest level implementation possible using standard sockets - **Status: Done**
 
-2. **C**: Highest level implementation possible using C with standard socket system calls
+2. **C**: Highest level implementation possible using C with standard socket system calls - **Status: Done**
 
-3. **C with kernel timestamping**: One level lower using socket options to add kernel timestamping to reduce the non-deterministic delay from the time when the packet reaches the NIC to the time the userland records the time
+3. **C with kernel timestamping**: One level lower using socket options to add kernel timestamping to reduce the non-deterministic delay from the time when the packet reaches the NIC to the time the userland records the time  - **Status: Icebox, too kernel/hardware specific, not enough support**
 
-4. **C with kernel bypass using netmap**: Bypassing the kernel completely using netmap and talking directly to the NIC using mmap, ioctl, and ring buffers. Should result in the most accurate measurements and fastest execution.
+4. **C with kernel bypass using netmap**: Bypassing the kernel completely using netmap and talking directly to the NIC using mmap, ioctl, and ring buffers. Should result in the most accurate measurements and fastest execution  - **Status: WIP**
 
 Structure
 ==========
@@ -19,7 +19,7 @@ Structure
 
 **master/** contains the implementation for the master which will initiate the sync protocol with the slave.
 
-Running it
+Running
 ===========
 
 Run the slave on the designated slave machine first, then run the master from the designated master.
