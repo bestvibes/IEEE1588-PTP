@@ -23,31 +23,27 @@ int is_little_endian()
     return u.c[0] == 4; 
 }
 
-char *hton(char *in, long size) {
+char *hton(char *in, long size, char *out) {
     if(is_little_endian()) {
-        char *out = malloc(size);
         int i;
         for(i = 0; i < size; i++) {
             out[size-1-i] = in[i];
         }
-        return out;
     }
     else {
-        return in;
+        out = in;
     }
 }
 
-char *hton2(void *in, long size) {
+char *hton2(void *in, long size, char *out) {
     if(is_little_endian()) {
-        char *out = malloc(size);
         int i;
         for(i = 0; i < size; i++) {
             out[size-1-i] = *(uint64_t *)in >> 8*i;
         }
-        return out;
     }
     else {
-        return in;
+        out = in;
     }
 }
 #endif

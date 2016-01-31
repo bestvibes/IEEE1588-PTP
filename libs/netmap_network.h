@@ -235,11 +235,11 @@ struct pkt_ptp *init_ptp_packet(int ptp_mtype) {
 struct pkt_ptp *timestamp_ptp_packet(struct pkt_ptp *p) {
     int t[2];
     get_time(t);
-    union uint48_t n;
+    union uint48_t n, n2;
     n.v = t[0];
-    memcpy(n.c, hton(n.c, 6), 6);
-    dump_payload(n.c, 6);
-    p->s = n.v;
+    hton(n.c, 6, n2.c);
+    dump_payload(n2.c, 6);
+    p->s = n2.v;
     p->ns = htonl(t[1]);
     return p;
 }
