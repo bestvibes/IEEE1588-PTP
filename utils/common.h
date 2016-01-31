@@ -1,3 +1,6 @@
+#ifndef COMMON_IMPORTED
+#define COMMON_IMPORTED
+
 /* default, printf, etc */
 #include<stdio.h>
 /* gettimeofday() */
@@ -9,13 +12,11 @@
 
 /* USER-DEFINED SETTINGS */
 #define PORT 2468
-/* #define SLAVE_IP "192.168.137.2" */
 #define SLAVE_IP "127.0.0.1"
-//#define SLAVE_IP "10.0.0.19"
+#define NETMAP_INTERFACE "eth0"
 #define NUM_OF_TIMES 1000  /* num of times to run protocol */
 
 #define FIXED_BUFFER 16
-
 #define HELLO "Hello World!"
 
 #ifndef likely /* For branch predictions */
@@ -50,3 +51,4 @@ inline void get_time(int in[2]) {
         #endif
     }
 }
+#endif

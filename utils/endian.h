@@ -1,3 +1,6 @@
+#ifndef ENDIAN_IMPORTED
+#define ENDIAN_IMPORTED
+
 #include <stdint.h>
 #include <limits.h>
 
@@ -6,7 +9,7 @@
 #endif
 
 union uint48_t {
-    unsigned char c[6];
+    char c[6];
     uint64_t v:48;
 };
 
@@ -20,9 +23,9 @@ int is_little_endian()
     return u.c[0] == 4; 
 }
 
-unsigned char *hton(unsigned char *in, long size) {
+char *hton(char *in, long size) {
     if(is_little_endian()) {
-        unsigned char *out = malloc(size);
+        char *out = malloc(size);
         int i;
         for(i = 0; i < size; i++) {
             out[size-1-i] = in[i];
@@ -34,9 +37,9 @@ unsigned char *hton(unsigned char *in, long size) {
     }
 }
 
-unsigned char *hton2(void *in, long size) {
+char *hton2(void *in, long size) {
     if(is_little_endian()) {
-        unsigned char *out = malloc(size);
+        char *out = malloc(size);
         int i;
         for(i = 0; i < size; i++) {
             out[size-1-i] = *(uint64_t *)in >> 8*i;
@@ -47,3 +50,4 @@ unsigned char *hton2(void *in, long size) {
         return in;
     }
 }
+#endif

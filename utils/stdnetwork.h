@@ -1,7 +1,13 @@
+/* default, printf, etc */
+#include<stdio.h>
 /* socket stuff */
 #include<sys/socket.h>
 /* socket structs */
 #include<netdb.h>
+/* close() */
+#include<unistd.h>
+
+#include "common.h"
 
 inline void close_socket(int sock) {
     printf("\nClosing socket...\n");
