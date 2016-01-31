@@ -28,16 +28,22 @@
 #include <sys/ioctl.h>
 /* ifreq struct */
 #include <net/if.h>
+/* ether_header */
+#include <netinet/if_ether.h>
+/* ether_aton */
+#include <netinet/ether.h>
 
 
-#include "../utils.h"
+#include "../utils/common.h"
+#include "../utils/netmap_network.h"
+#include "../utils/endian.h"
 
 #define INTERFACE "eth0"
 
 #define PKT_SIZE 60
 #define MASTER_IP 10.0.0.11
 #define ETHERTYPE_PTP 0x88F7
-#define DEST_MAC "01:1b:19:00:00:00"
+#define DEST_MAC "01:1b:19:00:00:00" /*defined by IEEE-1588v2*/
 
 struct ptp_header {
     uint8_t  ptp_ts:4,              /*transportSpecific*/
@@ -62,12 +68,13 @@ struct pkt_ptp {
     uint32_t ns;
 } __attribute__((__packed__));
 
-struct pkt {
-    struct ether_header eh;
-    struct ip ip;
-    struct udphdr udp;
-    uint8_t body[16384];
-} __attribute__((__packed__));
+enum ptp_msg_type
+{
+    SYNC = 0x0,
+    DELAY_REQ = 0x1,
+    FOLLOW_UP = 0x8,
+    DELAY_RESP = 0x9,
+};
 
 void close_socket(int sock);
 
@@ -252,25 +259,25 @@ uint16_t checksum(const void *header, uint16_t len, uint32_t sum) {
     return sum;
 }
 
-struct pkt_ptp *init_ptp_packet(int ptp_type) {
+struct pkt_ptp *init_ptp_packet(int ptp_mtype) {
     int i, j = 0;
-    struct pkt_ptp *pkt;
-    struct ether_header *eh = pkt->eh;
-    struct ptp_header *ph = pkt->ph;
+    struct pkt_ptp *pkt = malloc(sizeof(struct pkt_ptp));
+    struct ether_header *eh = &pkt->eh;
+    struct ptp_header *ph = &pkt->ph;
     uint8_t shost[6];
 
     get_local_mac(shost);
 
-    int paylen = PKT_SIZE - sizeof(pkt->eh) - sizeof(pkt->ip);
+    int paylen = PKT_SIZE - sizeof(*eh) - sizeof(*ph);
 
     eh->ether_type = htons(ETHERTYPE_PTP);              /*PTP over 802.3 ethertype*/
     memcpy(eh->ether_shost, shost, 6);                  /*source mac*/
     memcpy(eh->ether_dhost, ether_aton(DEST_MAC), 6);   /*destination mac*/
 
     ph->ptp_ts = 0;
-    ph->ptp_type = ptp_type;
-    ph->ptp_v = 2;                                  /*PTPv2 IEEE1588-2008*/
-    ph->ptp_ml = ;  /*TODO*/
+    ph->ptp_type = ptp_mtype;
+    ph->ptp_v = 2;                                      /*PTPv2 IEEE1588-2008*/
+    ph->ptp_ml = htons(sizeof(struct pkt_ptp) - sizeof(struct ether_header));
     ph->ptp_dn = 0;
     ph->ptp_flags = 0;
     ph->ptp_cf = 0;
@@ -288,42 +295,19 @@ struct pkt_ptp *init_ptp_packet(int ptp_type) {
         }
     }
 
-    ph->ptp_sid = 0;  /*irrelevant at this point*/
+    ph->ptp_sid = 0;  /*TODO, add sequence number on each protocol iteration*/
     ph->ptp_ctlf = 0;  /*deprecated in PTPv2*/
     ph->ptp_lmi = 0;   /*irrelevant*/
 
+    int t[2];
+    get_time(t);
+    union uint48_t n;
+    n.v = t[0];
+    memcpy(n.c, hton(n.c, 6), 6);
+    dump_payload(n.c, 6);
+    pkt->s = n.v;
+    pkt->ns = htonl(t[1]);
     return pkt;
-}
-
-void init_packet(struct pkt *pkt, const char *payload) {
-    struct ether_header *eh = pkt->eh;
-    struct ip *ip = pkt->ip;
-    struct udp *udp = pkt->udp;
-    struct in_addr in_a = inet_aton(SLAVE_IP)
-
-    int paylen = PKT_SIZE - sizeof(pkt->eh) - sizeof(pkt->ip);
-
-
-    ip->ip_v = IPVERSION;                           /*ipv4*/
-    ip->ip_hl = 5;                                  /*header length*/
-    ip->ip_id = 0;                                  /*identification*/
-    ip->ip_tos = IPTOS_LOWDELAY;                    /*type of service*/
-    ip->ip_len = htons(PKT_SIZE - sizeof(pkt->eh)); /*total length*/
-    ip->ip_off = htons(IP_DF);                      /*fragment offset field (don't fragment) */
-    ip->ip_ttl = IPDEFTTL;                          /*time to live (64)*/
-    ip->ip_p = IPPROTO_UDP;                         /*protocol (udp)*/
-    ip->ip_dst.s_addr = inet_addr(SLAVE_IP);        /*dest address (inet_addr makes network byte order)*/
-    ip->ip_src.s_addr = inet_addr(MASTER_IP);       /*src address (local address)*/
-    ip->ip_sum = 0;                                 /*no need to calculate*/
-
-    udp->uh_sport = htons(PORT);                    /*ports*/
-    udp->uh_dport = htons(PORT);
-    udp->uh_ulen = htons(paylen);                   /*length of payload including udp header*/
-    udp->uh_sum = 0;                                /*no need to calculate*/
-
-    eh->ether_type = htons(ETHERTYPE_PTP);          /*PTP over 802.3 ethertype*/
-    eh->ether_shost =
-    eh->ether_dhost =
 }
 
 int main() {
@@ -363,8 +347,6 @@ int main() {
             txring = NETMAP_TXRING(nifp, i);
             if(nm_ring_empty(txring))
                 continue;
-
-        }
 
 
 
