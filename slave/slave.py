@@ -33,16 +33,16 @@ def main():
             data = data.decode("utf8")
             print("Request from " + addr[0])
             if("sync" == data):
-                server_socket.sendto(bytes("ready", encoding='utf8'), addr)
+                server_socket.sendto("ready".encode('utf8'), addr)
                 num_of_times, addr = server_socket.recvfrom(4096)
                 num_of_times = int(num_of_times)
-                server_socket.sendto(bytes("ready", encoding='utf8'), addr)
+                server_socket.sendto("ready".encode('utf8'), addr)
                 for i in range(int(num_of_times)):
                     sync_clock()
                 print("Done!")
             else:
                 server_socket.sendto(
-                    bytes("Hello World!", encoding='utf8'), addr)
+                    "Hello World!".encode('utf8'), addr)
     except socket.error as e:
         print("Error while handling requests: " + str(e))
         server_socket.close()
@@ -80,7 +80,7 @@ def recv():
 
 def send(data, addr):
     try:
-        server_socket.sendto(bytes(data, encoding='utf8'), addr)
+        server_socket.sendto(data.encode('utf8'), addr)
         # print "Sent to " + addr[0]
     except socket.error as e:
         print("Error while sending request: " + str(e))

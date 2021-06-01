@@ -55,12 +55,13 @@ def sync_clock():
 
             send("next")
 
-        print("\n\nAVG OFFSET: %sns" % str(sum(OFFSETS) * 1_000_000_000 / len(OFFSETS)
-                                           ) + "\nAVG DELAY: %sns" % str(sum(DELAYS) * 1_000_000_000 / len(DELAYS)))
-        print("\n\nMIN OFFSET: %sns" % str(min(OFFSETS) * 1_000_000_000) +
-              "\nMIN DELAY: %sns" % str(min(DELAYS) * 1_000_000_000))
-        print("\n\nMAX OFFSET: %sns" % str(max(OFFSETS) * 1_000_000_000) +
-              "\nMAX DELAY: %sns" % str(max(DELAYS) * 1_000_000_000))
+        ONEBILLION = 1000000000
+        print("\n\nAVG OFFSET: %sns" % str(sum(OFFSETS) * ONEBILLION / len(OFFSETS) \
+                                           ) + "\nAVG DELAY: %sns" % str(sum(DELAYS) * ONEBILLION / len(DELAYS)))
+        print("\n\nMIN OFFSET: %sns" % str(min(OFFSETS) * ONEBILLION) +
+              "\nMIN DELAY: %sns" % str(min(DELAYS) * ONEBILLION))
+        print("\n\nMAX OFFSET: %sns" % str(max(OFFSETS) * ONEBILLION) +
+              "\nMAX DELAY: %sns" % str(max(DELAYS) * ONEBILLION))
         print("\nDone!")
     else:
         print("Error syncing times, received: " + resp.decode("utf8"))
@@ -91,7 +92,7 @@ def recv():
 
 def send(data):
     try:
-        server_socket.sendall(bytes(data, encoding='utf8'))
+        server_socket.sendall(data.encode('utf8'))
         t = get_time()
         return t
         # print "Sent:" + str(data)
